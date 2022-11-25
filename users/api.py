@@ -1,11 +1,11 @@
-from flask import Flask
-from flask import jsonify
+
 from flask import request
-from User import User
-from UserPrimitive import UserPrimitive
+from flask import jsonify
 
-app = Flask(__name__)
+from users.User import User
+from users.UserPrimitive import UserPrimitive
 
+from users import app
 
 controller = UserPrimitive()
 
@@ -34,7 +34,7 @@ def show_user(id):
         response = user.to_dict()
         return response, 201
 
-    return {"error":f"Could not find user {id}"}, 400
+    return {"error":f"Could not find user {int(id)}"}, 400
 
 @app.delete("/delete_user/<id>")
 def delete_user(id):

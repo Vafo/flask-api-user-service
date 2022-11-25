@@ -1,6 +1,6 @@
 
-from User import User
-from UserController import UserController
+from users.User import User
+from users.UserController import UserController
 
 class UserPrimitive(UserController):
 

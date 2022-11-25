@@ -1,4 +1,4 @@
-from User import User
+from users.User import User
 from abc import ABC, abstractmethod
 
 class UserController(ABC):
