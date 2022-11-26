@@ -1,15 +1,17 @@
 from flask import Flask
-from .UserPrimitive import UserPrimitive
+from flask_sqlalchemy import SQLAlchemy
 
-controller = UserPrimitive()
+db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
     app.config.from_mapping(
         SECRET_KEY='aboba',
-        DATABASE=''
+        SQLACLHEMY_DATABASE_URI='postgresql:///user-service'
     )
     
+    db.init_app(app)
+
     # Instances?? https://flask.palletsprojects.com/en/2.2.x/tutorial/factory/
     
     from users.auth import auth as auth_blueprint
