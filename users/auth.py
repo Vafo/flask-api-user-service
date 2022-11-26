@@ -1,15 +1,15 @@
 
 from flask import request
 from flask import jsonify
+from flask import Blueprint
 
 from users.User import User
 from users.UserPrimitive import UserPrimitive
+from users import controller
 
-from users import app
+auth = Blueprint("auth", __name__)
 
-controller = UserPrimitive()
-
-@app.post("/register")
+@auth.post("/register")
 def register():
     if request.is_json:
         user = User().from_dict(request.get_json())
@@ -24,19 +24,7 @@ def register():
     
     return {"error":"Only JSON is supported"}, 415
 
-@app.get("/show_user/<id>")
-def show_user(id):
-    user = None
-    print("Request for USER " + id)
-    user = controller.load_user(id=int(id))
-
-    if user:
-        response = user.to_dict()
-        return response, 201
-
-    return {"error":f"Could not find user {int(id)}"}, 400
-
-@app.delete("/delete_user/<id>")
+@auth.delete("/delete_user/<id>")
 def delete_user(id):
     
     success = controller.delete_user(id=int(id))
