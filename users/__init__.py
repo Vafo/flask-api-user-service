@@ -6,9 +6,9 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
     app.config.from_mapping(
-        SECRET_KEY='aboba',
-        SQLACLHEMY_DATABASE_URI='postgresql:///user-service'
-    )
+            SECRET_KEY='aboba',
+            SQLALCHEMY_DATABASE_URI='postgresql:///user-service'
+        )
     
     db.init_app(app)
 
