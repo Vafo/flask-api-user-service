@@ -6,7 +6,7 @@ from flask import Blueprint
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from . import db
-from .models import User
+from .models import UserInfo
 
 auth = Blueprint("auth", __name__)
 
@@ -20,13 +20,11 @@ def register():
         if not (username and password):
             return {"error":"username or password fields are missed"}, 400
 
-
-
-        user = User.query.filter_by(username=username).first()
+        user = UserInfo.query.filter_by(username=username).first()
         if user:
             return {"error":"Username is reseved, try other"}, 400
 
-        new_user = User(username=username, password=generate_password_hash(password, "sha256"))
+        new_user = UserInfo(username=username, password=generate_password_hash(password, "sha256"))
         
         db.session.add(new_user)
         db.session.commit()
@@ -48,7 +46,7 @@ def login():
         if not (username and password):
             return {"error":"username or password fields are missed"}, 400
 
-        user = User.query.filter_by(username=username).first()
+        user = UserInfo.query.filter_by(username=username).first()
         if user is None:
             return {"error":"There is no such user"}, 400
 
