@@ -1,5 +1,9 @@
 from flask import Blueprint
+from flask import request
+from werkzeug.security import generate_password_hash
+
 from .models import UserInfo, UserProfile
+from . import db
 
 main = Blueprint('main', __name__)
 
@@ -32,6 +36,39 @@ def get_info(username):
 
     return res, 200
 
+@main.post("/info/<username>")
+def post_info(username):
+    if request.is_json:
+        if check_identity(username, request.headers):
+            user = UserInfo.query.filter_by(username=username).first()
+            user_layout = user.as_dict()
+            del user_layout["register_date"]
+            del user_layout["id"]
+
+            data = request.json
+            for attr in data:
+                if attr not in user_layout:
+                    return {"error":"Bad JSON"}, 415
+
+                info = data[attr]
+                if attr == "password":
+                    info = generate_password_hash(info, method="sha256")
+                if attr == "username":
+                    busy_user = UserInfo.query.filter_by(username=info).first()
+                    if busy_user:
+                        return {"error":"Username is busy"}, 400
+                        
+                setattr(user, attr, info)
+            
+            # db.session.delete(user.token)
+            db.session.commit()
+            return user.as_dict(), 200
+        
+        return {"error":"You can not edit this user"}, 400
+
+
+    return {"error":"Only JSON is supported"}, 415
+
 @main.get("/profile/<username>")
 def get_profile(username):
     user = UserInfo.query.filter_by(username=username).first()
@@ -45,6 +82,14 @@ def get_profile(username):
     res = user_profile.as_dict()
     return res, 200
 
+
+def check_identity(username, headers):
+    if "Token" in headers:
+        token = headers["Token"]
+        user = UserInfo.query.filter_by(username=username).first()
+        if user and user.token:
+            return True if user.token.token == token else False
+    return False
 
 # @main.get("/show_user/<id>")
 # def show_user(id):

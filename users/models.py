@@ -16,6 +16,7 @@ class UserInfo(db.Model):
     register_date = db.Column(db.DateTime, default=datetime.utcnow())
 
     profile = db.relationship("UserProfile", uselist=False)
+    token = db.relationship("UserToken", uselist=False)
 
     as_dict = as_dict
 
@@ -30,3 +31,10 @@ class UserProfile(db.Model):
     
     as_dict = as_dict
 
+class UserToken(db.Model):
+    __tablename__ = "user_token"
+
+    id = db.Column(db.Integer, db.ForeignKey("user_info.id"), primary_key=True)
+    token = db.Column(db.String(100), unique=True, nullable=False)
+
+    as_dict = as_dict

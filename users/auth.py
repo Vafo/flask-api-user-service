@@ -2,11 +2,13 @@
 from flask import request
 from flask import jsonify
 from flask import Blueprint
+from random import randbytes
+from base64 import b64encode
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from . import db
-from .models import UserInfo
+from .models import UserInfo, UserToken
 
 auth = Blueprint("auth", __name__)
 
@@ -51,7 +53,16 @@ def login():
             return {"error":"There is no such user"}, 400
 
         if check_password_hash(user.password, password):
-            return {"success":"Correct password"}, 200
+            
+            if user.token:
+                db.session.delete(user.token)
+
+            new_token = UserToken(id = user.id, token = str(b64encode(randbytes(10))) )
+
+            db.session.add(new_token)
+            db.session.commit()
+
+            return {"token":f"{new_token.token}"}, 200
         else:
             return {"error":"Incorrect password"}, 400
         
