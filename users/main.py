@@ -57,7 +57,7 @@ def post_info(username):
                     busy_user = UserInfo.query.filter_by(username=info).first()
                     if busy_user:
                         return {"error":"Username is busy"}, 400
-                        
+
                 setattr(user, attr, info)
             
             # db.session.delete(user.token)
@@ -68,6 +68,7 @@ def post_info(username):
 
 
     return {"error":"Only JSON is supported"}, 415
+
 
 @main.get("/profile/<username>")
 def get_profile(username):
@@ -81,6 +82,42 @@ def get_profile(username):
 
     res = user_profile.as_dict()
     return res, 200
+
+
+@main.post("/profile/<username>")
+def post_profile(username):
+    if request.is_json:
+        if check_identity(username, request.headers):
+            user = UserInfo.query.filter_by(username=username).first()
+            profile = user.profile
+            data = request.json
+
+            not_present = False
+            if profile is None:
+                not_present = True
+                profile = UserProfile()
+
+            profile_layout = profile.as_dict()
+            del profile_layout["id"]
+
+            for attr in data:
+                if attr not in profile_layout:
+                    return {"error":"Bad JSON"}, 415
+
+                info = data[attr]
+                setattr(profile, attr, info)
+                
+            if not_present:
+                profile.id = user.id
+                db.session.add(profile)
+            # db.session.delete(user.token)
+            db.session.commit()
+            return profile.as_dict(), 200
+        
+        return {"error":"You can not edit this user"}, 400
+
+
+    return {"error":"Only JSON is supported"}, 415
 
 
 def check_identity(username, headers):
